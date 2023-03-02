@@ -8,6 +8,9 @@ class Cat(models.Model):
     description = models.TextField(max_length=250)
     age = models.IntegerField()
 
+    #dunder str method return cat anme
+    def __str__(self):
+        return self.name
 
 
 
