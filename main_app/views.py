@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from .models import Cat
+from django.views.generic import ListView
+from django.views.generic.detail import DetailView
+from .models import Cat, Toy
 from .forms import FeedingForm
 
 # temporary cats for building templates
@@ -33,15 +35,9 @@ def cats_index(request):
 def cats_detail(request, cat_id):
     cat = Cat.objects.get(id=cat_id)
 
-    #instantiate feeding form to be rendered in template
+    # instantiate FeedingForm to be rendered in the template
     feeding_form = FeedingForm()
-    return render(request, 'cats/detail.html', {
-    # include the cat and feeding_form in the context
-    'cat': cat, 'feeding_form': feeding_form
-  })
-
-
-    return render(request, 'cats/detail.html', { 'cat': cat })
+    return render(request, 'cats/detail.html', { 'cat': cat, 'feeding_form': feeding_form })
 
 class CatCreate(CreateView):
     model = Cat
@@ -65,16 +61,48 @@ class CatDelete(DeleteView):
     success_url = '/cats/'
 
 def add_feeding(request, cat_id):
-    # Baby step
+    # create a ModelForm instance from the data in request.POST
     form = FeedingForm(request.POST)
-    # validate the form
+
+    # we need to validate the form, that means "does it match our data?"
     if form.is_valid():
-        # don't save the form to the db until it
-        # has the cat_id assigned
+        # we dont want to save the form to the db until is has the cat id
         new_feeding = form.save(commit=False)
         new_feeding.cat_id = cat_id
         new_feeding.save()
     return redirect('detail', cat_id=cat_id)
+
+# ToyList
+class ToyList(ListView):
+    model = Toy
+    template_name = 'toys/index.html'
+
+# ToyDetail
+class ToyDetail(DetailView):
+    model = Toy
+    template_name = 'toys/detail.html'
+
+# ToyCreate
+class ToyCreate(CreateView):
+    model = Toy
+    fields = ['name', 'color']
+
+    # define what the inherited method is_valid does(we'll update this later)
+    def form_valid(self, form):
+        # we'll use this later, but implement right now
+        # we'll need this when we add auth
+        # super allows for the original inherited CreateView function to work as it was intended
+        return super().form_valid(form)
+
+# ToyUpdate
+class ToyUpdate(UpdateView):
+    model = Toy
+    fields = ['name', 'color']
+
+# ToyDelete
+class ToyDelete(DeleteView):
+    model = Toy
+    success_url = '/toys/'
 
 
 
